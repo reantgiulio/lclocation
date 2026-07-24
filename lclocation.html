@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escape Game Apéro | La Box Mystère</title>
+
+  <style>
+    :root {
+      --bg: #0c0907;
+      --bg-soft: #15100d;
+      --card: rgba(255, 246, 229, 0.07);
+      --card-strong: rgba(255, 246, 229, 0.12);
+      --text: #fff7ea;
+      --muted: #c8b8a0;
+      --red: #e64032;
+      --red-dark: #a8231d;
+      --gold: #f0b75d;
+      --cream: #fff0d1;
+      --border: rgba(255, 255, 255, 0.13);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 15% 8%, rgba(230, 64, 50, 0.32), transparent 32%),
+        radial-gradient(circle at 80% 12%, rgba(240, 183, 93, 0.20), transparent 34%),
+        linear-gradient(180deg, #120d0a 0%, #070504 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, #000 0%, transparent 85%);
+      z-index: -1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    video {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(18px);
+      background: rgba(12, 9, 7, 0.76);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .brand-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--cream);
+      background:
+        linear-gradient(135deg, var(--red), var(--red-dark)),
+        radial-gradient(circle at 30% 20%, #fff, transparent 20%);
+      box-shadow: 0 12px 35px rgba(230, 64, 50, 0.35);
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.72rem;
+      letter-spacing: 1.3px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link {
+      border: 0;
+      color: var(--text);
+      cursor: pointer;
+      background: transparent;
+      font-weight: 800;
+      padding: 12px 14px;
+      border-radius: 999px;
+      transition: 0.2s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(255, 255, 255, 0.10);
+    }
+
+    .btn {
+      border: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      color: white;
+      background: linear-gradient(135deg, var(--red), #ff6d3f);
+      box-shadow: 0 16px 42px rgba(230, 64, 50, 0.35);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 20px 48px rgba(230, 64, 50, 0.45);
+    }
+
+    .btn-secondary {
+      color: var(--cream);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.13);
+    }
+
+    .btn-dark {
+      color: var(--bg);
+      background: var(--cream);
+    }
+
+    .page {
+      display: none;
+      animation: fadeUp 0.45s ease both;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero {
+      position: relative;
+      padding: 86px 0 72px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.03fr 0.97fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--gold);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 0.82rem;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 38px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--red);
+    }
+
+    h1 {
+      max-width: 720px;
+      font-size: clamp(3rem, 8vw, 6.6rem);
+      line-height: 0.86;
+      letter-spacing: -4px;
+      text-transform: uppercase;
+    }
+
+    .hero h1 span {
+      color: var(--red);
+      text-shadow: 0 10px 40px rgba(230, 64, 50, 0.25);
+    }
+
+    .lead {
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      line-height: 1.75;
+      max-width: 680px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .hero-badges {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 34px;
+      max-width: 720px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .mini-card strong {
+      display: block;
+      color: var(--cream);
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .mini-card span {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .media-card {
+      position: relative;
+      min-height: 590px;
+      border-radius: 34px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(145deg, rgba(230,64,50,0.20), rgba(240,183,93,0.09)),
+        url("image-hero.jpg") center/cover;
+      box-shadow: var(--shadow);
+    }
+
+    .media-card video {
+      width: 100%;
+      height: 100%;
+      min-height: 590px;
+      object-fit: cover;
+      opacity: 0.82;
+    }
+
+    .media-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.82), transparent 48%),
+        linear-gradient(125deg, rgba(230,64,50,0.18), transparent 50%);
+      pointer-events: none;
+    }
+
+    .price-ticket {
+      position: absolute;
+      right: 22px;
+      top: 22px;
+      z-index: 2;
+      padding: 18px 20px;
+      border-radius: 22px;
+      color: var(--bg);
+      background: var(--cream);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.36);
+      transform: rotate(3deg);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .price-ticket span {
+      display: block;
+      font-size: 0.77rem;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: #6f4f2b;
+    }
+
+    .price-ticket strong {
+      display: block;
+      font-size: 2.3rem;
+      line-height: 1;
+      color: var(--red-dark);
+    }
+
+    .media-caption {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      z-index: 2;
+      padding: 22px;
+      border-radius: 24px;
+      background: rgba(12, 9, 7, 0.72);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+    }
+
+    .media-caption strong {
+      display: block;
+      font-size: 1.35rem;
+      margin-bottom: 7px;
+    }
+
+    .media-caption p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .section {
+      padding: 74px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 34px;
+    }
+
+    .kicker {
+      color: var(--red);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(2.1rem, 4vw, 4.2rem);
+      line-height: 0.95;
+      letter-spacing: -2px;
+      text-transform: uppercase;
+    }
+
+    .section-head p,
+    .section-intro {
+      max-width: 560px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 1.02rem;
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .feature-panel {
+      padding: 34px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+    }
+
+    .feature-panel h3 {
+      font-size: clamp(1.8rem, 3vw, 3.2rem);
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin-bottom: 18px;
+    }
+
+    .feature-panel p {
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 18px;
+    }
+
+    .included-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .included-list li {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.06);
+      color: var(--cream);
+      font-weight: 750;
+    }
+
+    .included-list li::before {
+      content: "✓";
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--bg);
+      background: var(--gold);
+      font-weight: 900;
+      flex: 0 0 26px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .step-card {
+      min-height: 250px;
+      padding: 28px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-card::after {
+      content: attr(data-step);
+      position: absolute;
+      right: -8px;
+      bottom: -22px;
+      color: rgba(255,255,255,0.05);
+      font-weight: 900;
+      font-size: 8rem;
+      line-height: 1;
+    }
+
+    .step-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      margin-bottom: 22px;
+      background: rgba(230, 64, 50, 0.18);
+      color: var(--gold);
+      font-size: 1.65rem;
+    }
+
+    .step-card h3 {
+      font-size: 1.35rem;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .step-card p {
+      color: var(--muted);
+      line-height: 1.65;
+      position: relative;
+      z-index: 1;
+    }
+
+    .banner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: 38px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background:
+        linear-gradient(115deg, rgba(230,64,50,0.92), rgba(116,29,23,0.9)),
+        url("image-ambiance.jpg") center/cover;
+      box-shadow: var(--shadow);
+    }
+
+    .banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 30%, rgba(255,255,255,0.24), transparent 32%);
+      pointer-events: none;
+    }
+
+    .banner-content {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .banner h2 {
+      color: white;
+      max-width: 760px;
+    }
+
+    .banner p {
+      margin-top: 16px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.7;
+      max-width: 720px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 0.9fr;
+      gap: 16px;
+    }
+
+    .photo {
+      min-height: 270px;
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.10)),
+        var(--image, linear-gradient(135deg, rgba(230,64,50,0.35), rgba(240,183,93,0.15)));
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+    }
+
+    .photo.large {
+      grid-row: span 2;
+      min-height: 556px;
+    }
+
+    .photo:nth-child(1) { --image: url("image-1.jpg"); }
+    .photo:nth-child(2) { --image: url("image-2.jpg"); }
+    .photo:nth-child(3) { --image: url("image-3.jpg"); }
+    .photo:nth-child(4) { --image: url("image-4.jpg"); }
+    .photo:nth-child(5) { --image: url("image-5.jpg"); }
+
+    .photo-label {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.52);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .photo-label strong {
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .photo-label span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
+    }
+
+    .details-hero,
+    .booking-hero {
+      padding: 54px 0 30px;
+    }
+
+    .back-line {
+      margin-bottom: 26px;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .big-card {
+      padding: 34px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      box-shadow: var(--shadow);
+    }
+
+    .big-card h3 {
+      font-size: 1.6rem;
+      text-transform: uppercase;
+      margin: 22px 0 12px;
+    }
+
+    .big-card h3:first-child {
+      margin-top: 0;
+    }
+
+    .big-card p {
+      color: var(--muted);
+      line-height: 1.78;
+      margin-bottom: 14px;
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .rule {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .rule strong {
+      display: block;
+      color: var(--gold);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-size: 0.86rem;
+      letter-spacing: 1px;
+    }
+
+    .rule span {
+      color: var(--cream);
+      line-height: 1.55;
+    }
+
+    .sticky-card {
+      position: sticky;
+      top: 100px;
+      padding: 26px;
+      border-radius: 30px;
+      background: var(--cream);
+      color: #1b120c;
+      box-shadow: var(--shadow);
+    }
+
+    .sticky-card .price-big {
+      font-size: 4rem;
+      color: var(--red-dark);
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: -3px;
+      margin: 8px 0;
+    }
+
+    .sticky-card p {
+      color: #6e563b;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--cream);
+      font-weight: 850;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 16px;
+      padding: 14px 15px;
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      outline: none;
+      font: inherit;
+      transition: 0.2s ease;
+    }
+
+    textarea {
+      min-height: 118px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(240, 183, 93, 0.75);
+      box-shadow: 0 0 0 4px rgba(240, 183, 93, 0.12);
+    }
+
+    select option {
+      color: #15100d;
+    }
+
+    .choice-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .drink-choice {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .drink-choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .drink-box {
+      min-height: 96px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.13);
+      color: var(--cream);
+      font-weight: 900;
+      transition: 0.2s ease;
+    }
+
+    .drink-choice input:checked + .drink-box {
+      border-color: var(--gold);
+      background: rgba(240, 183, 93, 0.16);
+      box-shadow: 0 0 0 4px rgba(240, 183, 93, 0.08);
+    }
+
+    .summary-card {
+      padding: 26px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card h3 {
+      text-transform: uppercase;
+      font-size: 1.45rem;
+      margin-bottom: 18px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      color: var(--muted);
+    }
+
+    .summary-line strong {
+      color: var(--cream);
+      text-align: right;
+    }
+
+    .summary-total {
+      margin-top: 18px;
+      padding: 20px;
+      border-radius: 20px;
+      background: var(--cream);
+      color: #1b120c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .summary-total span {
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #6e563b;
+      font-size: 0.86rem;
+    }
+
+    .summary-total strong {
+      color: var(--red-dark);
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(240, 183, 93, 0.14);
+      border: 1px solid rgba(240, 183, 93, 0.35);
+      color: var(--cream);
+      line-height: 1.6;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    footer {
+      margin-top: 60px;
+      border-top: 1px solid var(--border);
+      padding: 34px 0;
+      color: var(--muted);
+    }
+
+    .footer-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .concept-grid,
+      .detail-layout,
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .media-card,
+      .media-card video {
+        min-height: 450px;
+      }
+
+      .steps,
+      .hero-badges,
+      .gallery,
+      .choice-row {
+        grid-template-columns: 1fr;
+      }
+
+      .photo.large {
+        min-height: 320px;
+      }
+
+      .banner-content {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px 0;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .nav-link,
+      .btn {
+        width: 100%;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+
+      .hero {
+        padding-top: 50px;
+      }
+
+      .section {
+        padding: 52px 0;
+      }
+
+      .section-head {
+        display: grid;
+      }
+
+      .form-grid,
+      .rules-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-panel,
+      .big-card,
+      .banner {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <nav class="container nav">
+      <button class="brand nav-link" data-page="home" aria-label="Retour à l'accueil">
+        <span class="brand-icon">🔐</span>
+        <span>
+          Apéro Box
+          <small>Escape game à domicile</small>
+        </span>
+      </button>
+
+      <div class="nav-links">
+        <button class="nav-link active" data-page="home">Accueil</button>
+        <button class="nav-link" data-page="details">En savoir plus</button>
+        <button class="btn btn-primary" data-page="reservation">Réserver</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- PAGE ACCUEIL -->
+    <section id="home" class="page active">
+      <div class="hero">
+        <div class="container hero-grid">
+          <div>
+            <div class="eyebrow">Mission spéciale apéro</div>
+            <h1>Débloquez <span>l’apéro</span></h1>
+
+            <p class="lead">
+              Une box fermée, des cadenas, des énigmes et un apéritif à libérer.
+              Formez votre équipe, fouillez les indices, résolvez les mystères et transformez votre soirée
+              en expérience immersive, conviviale et mémorable.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-primary" data-page="reservation">Réserver maintenant</button>
+              <button class="btn btn-secondary" data-page="details">En savoir plus</button>
+            </div>
+
+            <div class="hero-badges">
+              <div class="mini-card">
+                <strong>3 à 8</strong>
+                <span>joueurs par box</span>
+              </div>
+              <div class="mini-card">
+                <strong>125€</strong>
+                <span>prix de la box</span>
+              </div>
+              <div class="mini-card">
+                <strong>3 choix</strong>
+                <span>bière, vin ou 50/50</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="media-card" aria-label="Vidéo de présentation">
+            <!-- Mets la vidéo dans le même dossier que ce fichier HTML.
+                 Si tu la renommes, change simplement le src ci-dessous. -->
+            <video autoplay muted loop playsinline poster="image-hero.jpg">
+              <source src="escape%20apero%20V3.mp4" type="video/mp4" />
+            </video>
+
+            <div class="price-ticket">
+              <span>La box</span>
+              <strong>125€</strong>
+            </div>
+
+            <div class="media-caption">
+              <strong>Le coffre est prêt. L’apéro attend.</strong>
+              <p>
+                Votre mission : ouvrir la box avant que la faim, la soif et la pression de l’équipe
+                ne prennent le dessus.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Le concept</div>
+              <h2>Un apéro enfermé dans un jeu</h2>
+            </div>
+            <p>
+              L’expérience mélange escape game, soirée entre amis et apéritif. Tout est pensé pour créer
+              une activité simple à lancer, amusante à jouer et parfaite pour un anniversaire, une soirée
+              ou un moment en famille.
+            </p>
+          </div>
+
+          <div class="concept-grid">
+            <div class="feature-panel">
+              <h3>Ce qui est inclus</h3>
+              <p>
+                La box contient l’univers de jeu, les énigmes, les cadenas et l’apéritif choisi lors de
+                la réservation. Les joueurs avancent ensemble grâce aux indices pour accéder au contenu.
+              </p>
+
+              <ul class="included-list">
+                <li>Une box verrouillée avec plusieurs énigmes</li>
+                <li>Un scénario immersif autour de l’apéro</li>
+                <li>Boissons au choix : bière, vin ou moitié-moitié</li>
+                <li>Format idéal pour 3 à 8 joueurs</li>
+                <li>Prix clair : 125€ la box</li>
+              </ul>
+            </div>
+
+            <div class="steps">
+              <article class="step-card" data-step="01">
+                <div class="step-icon">🧊</div>
+                <h3>La box arrive</h3>
+                <p>
+                  Les joueurs découvrent une box mystérieuse, fermée par des cadenas.
+                  À l’intérieur : l’apéro, mais impossible d’y accéder sans résoudre la mission.
+                </p>
+              </article>
+
+              <article class="step-card" data-step="02">
+                <div class="step-icon">🧩</div>
+                <h3>Les énigmes commencent</h3>
+                <p>
+                  Fouille, logique, observation et communication : chaque indice rapproche l’équipe
+                  du prochain cadenas à ouvrir.
+                </p>
+              </article>
+
+              <article class="step-card" data-step="03">
+                <div class="step-icon">🍻</div>
+                <h3>L’apéro est libéré</h3>
+                <p>
+                  Une fois la box ouverte, place à la récompense : boissons, ambiance et fierté
+                  d’avoir réussi ensemble.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="banner">
+            <div class="banner-content">
+              <div>
+                <div class="kicker" style="color:white;">Une expérience clé en main</div>
+                <h2>Réservez votre box pour votre prochaine soirée</h2>
+                <p>
+                  Choisissez le nombre de joueurs, la formule boisson et envoyez votre demande.
+                  Le tarif reste simple et visible : 125€ pour la box.
+                </p>
+              </div>
+
+              <button class="btn btn-dark" data-page="reservation">Je réserve ma box</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Galerie</div>
+              <h2>L’ambiance en images</h2>
+            </div>
+            <p>
+              Remplace simplement les fichiers <strong>image-1.jpg</strong>, <strong>image-2.jpg</strong>,
+              <strong>image-3.jpg</strong>, etc. par tes propres photos.
+            </p>
+          </div>
+
+          <div class="gallery">
+            <div class="photo large">
+              <div class="photo-label">
+                <strong>La box mystère</strong>
+                <span>Photo principale de la glacière, du coffre ou du matériel de jeu.</span>
+              </div>
+            </div>
+
+            <div class="photo">
+              <div class="photo-label">
+                <strong>Les énigmes</strong>
+                <span>Ajoute ici une photo des indices, cadenas ou accessoires.</span>
+              </div>
+            </div>
+
+            <div class="photo">
+              <div class="photo-label">
+                <strong>L’équipe</strong>
+                <span>Une photo de groupe donne tout de suite une ambiance conviviale.</span>
+              </div>
+            </div>
+
+            <div class="photo">
+              <div class="photo-label">
+                <strong>Moment apéro</strong>
+                <span>Montre le côté plaisir et récompense du jeu.</span>
+              </div>
+            </div>
+
+            <div class="photo">
+              <div class="photo-label">
+                <strong>Immersion</strong>
+                <span>Décor, table, ambiance sombre ou lumière chaude.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PAGE EN SAVOIR PLUS -->
+    <section id="details" class="page">
+      <div class="container details-hero">
+        <div class="back-line">
+          <button class="btn btn-secondary" data-page="home">← Retour à l’accueil</button>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <div class="kicker">En savoir plus</div>
+            <h2>Comment fonctionne l’escape game apéro ?</h2>
+          </div>
+          <p>
+            Cette page détaille le principe du jeu, le déroulement et les infos importantes avant
+            de réserver.
+          </p>
+        </div>
+
+        <div class="detail-layout">
+          <article class="big-card">
+            <h3>Le principe</h3>
+            <p>
+              Les joueurs reçoivent une box fermée contenant l’apéritif. Pour l’ouvrir, ils doivent
+              progresser dans un scénario, résoudre des énigmes, comprendre les indices et coopérer.
+              Le jeu est pensé pour être accessible, dynamique et drôle, même pour des personnes qui
+              n’ont jamais fait d’escape game.
+            </p>
+
+            <h3>Le déroulement</h3>
+            <p>
+              Une fois la box installée, l’équipe découvre les premières consignes. Les joueurs avancent
+              de cadenas en cadenas jusqu’à accéder au contenu. L’objectif n’est pas seulement de gagner :
+              c’est surtout de créer un vrai moment de groupe autour de l’apéro.
+            </p>
+
+            <h3>Pour quelles occasions ?</h3>
+            <p>
+              L’activité fonctionne très bien pour un anniversaire, une soirée entre amis, un événement
+              familial, une soirée étudiante ou un petit team building. Le format de 3 à 8 joueurs permet
+              de garder une bonne communication entre tous les participants.
+            </p>
+
+            <div class="rules-grid">
+              <div class="rule">
+                <strong>Joueurs</strong>
+                <span>Minimum 3, maximum 8 joueurs par réservation.</span>
+              </div>
+
+              <div class="rule">
+                <strong>Boissons</strong>
+                <span>Choix entre 100% bière, 100% vin ou formule 50/50.</span>
+              </div>
+
+              <div class="rule">
+                <strong>Prix</strong>
+                <span>125€ pour la box, affiché clairement avant réservation.</span>
+              </div>
+
+              <div class="rule">
+                <strong>Objectif</strong>
+                <span>Résoudre les énigmes pour débloquer l’apéro.</span>
+              </div>
+            </div>
+          </article>
+
+          <aside class="sticky-card">
+            <span>Tarif unique</span>
+            <div class="price-big">125€</div>
+            <p>
+              Un prix simple pour réserver la box. Le nombre de joueurs autorisé est compris
+              entre 3 et 8.
+            </p>
+            <button class="btn btn-primary" data-page="reservation" style="width:100%;">Réserver</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE RÉSERVATION -->
+    <section id="reservation" class="page">
+      <div class="container booking-hero">
+        <div class="back-line">
+          <button class="btn btn-secondary" data-page="home">← Retour à l’accueil</button>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <div class="kicker">Réservation</div>
+            <h2>Réservez votre box</h2>
+          </div>
+          <p>
+            Choisissez votre date, le nombre de joueurs et la formule boisson. Le formulaire prépare
+            une demande de réservation claire.
+          </p>
+        </div>
+
+        <div class="booking-layout">
+          <article class="big-card">
+            <form id="bookingForm">
+              <div class="form-grid">
+                <label>
+                  Nom
+                  <input id="name" type="text" placeholder="Ex : Giulio" required />
+                </label>
+
+                <label>
+                  Téléphone
+                  <input id="phone" type="tel" placeholder="Ex : 06 00 00 00 00" required />
+                </label>
+              </div>
+
+              <div class="form-grid">
+                <label>
+                  Email
+                  <input id="email" type="email" placeholder="exemple@mail.com" required />
+                </label>
+
+                <label>
+                  Date souhaitée
+                  <input id="date" type="date" required />
+                </label>
+              </div>
+
+              <div class="form-grid">
+                <label>
+                  Heure souhaitée
+                  <input id="time" type="time" required />
+                </label>
+
+                <label>
+                  Nombre de joueurs
+                  <input id="players" type="number" min="3" max="8" value="3" required />
+                </label>
+              </div>
+
+              <label>
+                Formule boisson
+                <div class="choice-row">
+                  <label class="drink-choice">
+                    <input type="radio" name="drink" value="100% bière" checked />
+                    <span class="drink-box">🍺<br />100% bière</span>
+                  </label>
+
+                  <label class="drink-choice">
+                    <input type="radio" name="drink" value="100% vin" />
+                    <span class="drink-box">🍷<br />100% vin</span>
+                  </label>
+
+                  <label class="drink-choice">
+                    <input type="radio" name="drink" value="50% bière / 50% vin" />
+                    <span class="drink-box">🍻🍷<br />50 / 50</span>
+                  </label>
+                </div>
+              </label>
+
+              <label>
+                Message complémentaire
+                <textarea id="message" placeholder="Ex : adresse, occasion, demande spéciale..."></textarea>
+              </label>
+
+              <button class="btn btn-primary" type="submit">Préparer ma demande</button>
+
+              <div id="reservationResult" class="result"></div>
+            </form>
+          </article>
+
+          <aside class="summary-card">
+            <h3>Récapitulatif</h3>
+
+            <div class="summary-line">
+              <span>Joueurs</span>
+              <strong id="sumPlayers">3</strong>
+            </div>
+
+            <div class="summary-line">
+              <span>Boissons</span>
+              <strong id="sumDrink">100% bière</strong>
+            </div>
+
+            <div class="summary-line">
+              <span>Date</span>
+              <strong id="sumDate">À choisir</strong>
+            </div>
+
+            <div class="summary-line">
+              <span>Heure</span>
+              <strong id="sumTime">À choisir</strong>
+            </div>
+
+            <div class="summary-total">
+              <span>Total</span>
+              <strong>125€</strong>
+            </div>
+
+            <p style="margin-top:18px;color:var(--muted);line-height:1.65;">
+              Pour un vrai site, il faudra connecter ce formulaire à une adresse mail ou à un outil
+              de réservation. Ici, le bouton prépare déjà un récapitulatif propre.
+            </p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <strong>Apéro Box — Escape game à domicile</strong>
+      <span>Prix : 125€ · 3 à 8 joueurs · Bière, vin ou 50/50</span>
+    </div>
+  </footer>
+
+  <script>
+    const pages = document.querySelectorAll(".page");
+    const pageButtons = document.querySelectorAll("[data-page]");
+    const navLinks = document.querySelectorAll(".nav-link");
+    const form = document.getElementById("bookingForm");
+
+    const playersInput = document.getElementById("players");
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("time");
+
+    const sumPlayers = document.getElementById("sumPlayers");
+    const sumDrink = document.getElementById("sumDrink");
+    const sumDate = document.getElementById("sumDate");
+    const sumTime = document.getElementById("sumTime");
+    const reservationResult = document.getElementById("reservationResult");
+
+    function showPage(pageName) {
+      pages.forEach((page) => {
+        page.classList.toggle("active", page.id === pageName);
+      });
+
+      navLinks.forEach((link) => {
+        link.classList.toggle("active", link.dataset.page === pageName);
+      });
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      history.replaceState(null, "", "#" + pageName);
+    }
+
+    function selectedDrink() {
+      return document.querySelector('input[name="drink"]:checked').value;
+    }
+
+    function updateSummary() {
+      const players = playersInput.value || "3";
+      const date = dateInput.value ? new Date(dateInput.value).toLocaleDateString("fr-FR") : "À choisir";
+      const time = timeInput.value || "À choisir";
+
+      sumPlayers.textContent = players;
+      sumDrink.textContent = selectedDrink();
+      sumDate.textContent = date;
+      sumTime.textContent = time;
+    }
+
+    pageButtons.forEach((button) => {
+      button.addEventListener("click", () => showPage(button.dataset.page));
+    });
+
+    document.querySelectorAll("input, textarea").forEach((input) => {
+      input.addEventListener("input", updateSummary);
+      input.addEventListener("change", updateSummary);
+    });
+
+    document.querySelectorAll('input[name="drink"]').forEach((input) => {
+      input.addEventListener("change", updateSummary);
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const players = Number(playersInput.value);
+
+      if (players < 3 || players > 8) {
+        reservationResult.classList.add("show");
+        reservationResult.innerHTML = "⚠️ Le nombre de joueurs doit être compris entre <strong>3 et 8</strong>.";
+        playersInput.focus();
+        return;
+      }
+
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const date = dateInput.value ? new Date(dateInput.value).toLocaleDateString("fr-FR") : "";
+      const time = timeInput.value;
+      const message = document.getElementById("message").value.trim();
+      const drink = selectedDrink();
+
+      const body =
+        "Bonjour,%0D%0A%0D%0A" +
+        "Je souhaite réserver une Escape Game Apéro.%0D%0A%0D%0A" +
+        "Nom : " + encodeURIComponent(name) + "%0D%0A" +
+        "Téléphone : " + encodeURIComponent(phone) + "%0D%0A" +
+        "Email : " + encodeURIComponent(email) + "%0D%0A" +
+        "Date souhaitée : " + encodeURIComponent(date) + "%0D%0A" +
+        "Heure souhaitée : " + encodeURIComponent(time) + "%0D%0A" +
+        "Nombre de joueurs : " + encodeURIComponent(players) + "%0D%0A" +
+        "Formule boisson : " + encodeURIComponent(drink) + "%0D%0A" +
+        "Prix : 125€%0D%0A" +
+        "Message : " + encodeURIComponent(message || "Aucun message complémentaire") + "%0D%0A%0D%0A" +
+        "Merci.";
+
+      const mailto = "mailto:tonadresse@mail.com?subject=Demande de réservation Escape Game Apéro&body=" + body;
+
+      reservationResult.classList.add("show");
+      reservationResult.innerHTML =
+        "<strong>✅ Demande prête !</strong><br>" +
+        "Récapitulatif : " + players + " joueurs, " + drink + ", le " + date + " à " + time + ".<br>" +
+        "Total : <strong>125€</strong>.<br><br>" +
+        '<a class="btn btn-secondary" href="' + mailto + '">Ouvrir le mail de réservation</a>';
+    });
+
+    const firstPage = location.hash.replace("#", "");
+    if (["home", "details", "reservation"].includes(firstPage)) {
+      showPage(firstPage);
+    }
+
+    updateSummary();
+  </script>
+</body>
+</html>
